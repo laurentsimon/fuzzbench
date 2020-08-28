@@ -52,12 +52,15 @@ def prepare_build_environment():
         os.environ['enable_threadsafe'] = 'no'
 
     # See https://klee.github.io/tutorials/testing-function/
-    cflags = ['-O0', '-Xclang', '-disable-O0-optnone']
+    cflags = ['-O0', '-Xclang', '-disable-O0-optnone', '-g']
     utils.append_flags('CFLAGS', cflags)
     utils.append_flags('CXXFLAGS', cflags)
 
     # Add flags for various benchmarks.
     add_compilation_cflags()
+
+    # Dsiable SIMD
+    disable_simd()
 
     os.environ['LLVM_CC_NAME'] = 'clang-6.0'
     os.environ['LLVM_CXX_NAME'] = 'clang++-6.0'
@@ -194,7 +197,23 @@ def fix_fuzzer_lib():
         ld_flags = ['-lpthread']
         utils.append_flags('LDFLAGS', ld_flags)
 
-
+def disable_simd():
+    """Disable SIMD instructions"""
+    if is_benchmark('php'):
+        os.system('sed -i \'s/ZEND_INTRIN_SSE4_2_RESOLVER 1/ZEND_INTRIN_SSE4_2_RESOLVER 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_AVX2_NATIVE 1/ZEND_INTRIN_AVX2_NATIVE 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_AVX2_FUNC_PROTO 1/ZEND_INTRIN_AVX2_FUNC_PROTO 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_SSSE3_FUNC_PROTO 1/ZEND_INTRIN_SSSE3_FUNC_PROTO 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_AVX2_RESOLVER 1/ZEND_INTRIN_AVX2_RESOLVER 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_SSSE3_NATIVE 1/ZEND_INTRIN_SSSE3_NATIVE 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_SSSE3_FUNC_PROTO 1/ZEND_INTRIN_SSSE3_FUNC_PROTO 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_INTRIN_SSSE3_RESOLVER 1/ZEND_INTRIN_SSSE3_RESOLVER 0/g\' $PWD/Zend/zend_portability.h')
+        os.system('sed -i \'s/ZEND_USE_ASM_ARITHMETIC 1/ZEND_USE_ASM_ARITHMETIC 0/g\' $PWD/Zend/zend_operators.h')
+        #os.system('sed -i \'s/if defined(__GNUC__) && (defined(__i386__) || (defined(__x86_64__) && !defined(__ILP32__)))/if 0/g\' $PWD/Zend/zend_string.h')
+        os.system('sed -i \'s/#if defined(__GNUC__) && defined(__i386__)/ZEND_API zend_bool ZEND_FASTCALL zend_string_equal_val(zend_string *s1, zend_string *s2){return !memcmp(ZSTR_VAL(s1), ZSTR_VAL(s2), ZSTR_LEN(s1));}\n#if 0/g\' $PWD/Zend/zend_string.c')
+        os.system('sed -i \'s/if defined(__GNUC__) && defined(__i386__)/if 0/g\' $PWD/Zend/zend_string.c')
+        os.system('sed -i \'s/elif defined(__GNUC__) && defined(__x86_64__) && !defined(__ILP32__)/elif 0/g\' $PWD/Zend/zend_string.c')
+     
 def add_compilation_cflags():
     """Add custom flags for certain benchmarks"""
     if is_benchmark('openthread'):
@@ -203,7 +222,7 @@ def add_compilation_cflags():
         utils.append_flags('CXXFLAGS', openthread_flags)
 
     elif is_benchmark('php'):
-        php_flags = ['-D__builtin_cpu_supports\\(x\\)=0']
+        php_flags = ['-fPIC']
         utils.append_flags('CFLAGS', php_flags)
         utils.append_flags('CXXFLAGS', php_flags)
 
