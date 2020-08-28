@@ -210,7 +210,7 @@ def disable_simd():
         os.system('sed -i \'s/ZEND_INTRIN_SSSE3_RESOLVER 1/ZEND_INTRIN_SSSE3_RESOLVER 0/g\' $PWD/Zend/zend_portability.h')
         os.system('sed -i \'s/ZEND_USE_ASM_ARITHMETIC 1/ZEND_USE_ASM_ARITHMETIC 0/g\' $PWD/Zend/zend_operators.h')
         #os.system('sed -i \'s/if defined(__GNUC__) && (defined(__i386__) || (defined(__x86_64__) && !defined(__ILP32__)))/if 0/g\' $PWD/Zend/zend_string.h')
-        os.system('sed -i \'s/#if defined(__GNUC__) && defined(__i386__)/ZEND_API zend_bool ZEND_FASTCALL zend_string_equal_val(zend_string *s1, zend_string *s2){return !memcmp(ZSTR_VAL(s1), ZSTR_VAL(s2), ZSTR_LEN(s1));}\n#if 0/g\' $PWD/Zend/zend_string.c')
+        os.system('sed -i \'s/#if defined(__GNUC__) && defined(__i386__)/ZEND_API zend_bool ZEND_FASTCALL zend_string_equal_val(zend_string *s1, zend_string *s2){return !memcmp(ZSTR_VAL(s1), ZSTR_VAL(s2), ZSTR_LEN(s1));}\\n#if 0/g\' $PWD/Zend/zend_string.c')
         os.system('sed -i \'s/if defined(__GNUC__) && defined(__i386__)/if 0/g\' $PWD/Zend/zend_string.c')
         os.system('sed -i \'s/elif defined(__GNUC__) && defined(__x86_64__) && !defined(__ILP32__)/elif 0/g\' $PWD/Zend/zend_string.c')
      
