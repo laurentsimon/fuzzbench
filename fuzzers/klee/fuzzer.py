@@ -213,6 +213,10 @@ def disable_simd():
         os.system('sed -i \'s/#if defined(__GNUC__) && defined(__i386__)/ZEND_API zend_bool ZEND_FASTCALL zend_string_equal_val(zend_string *s1, zend_string *s2){return !memcmp(ZSTR_VAL(s1), ZSTR_VAL(s2), ZSTR_LEN(s1));}\\n#if 0/g\' $PWD/Zend/zend_string.c')
         os.system('sed -i \'s/if defined(__GNUC__) && defined(__i386__)/if 0/g\' $PWD/Zend/zend_string.c')
         os.system('sed -i \'s/elif defined(__GNUC__) && defined(__x86_64__) && !defined(__ILP32__)/elif 0/g\' $PWD/Zend/zend_string.c')
+        os.system('sed -i \'s/ifdef __SSE2__/if 0/g\' $PWD/Zend/ext/standard/url.c')
+        os.system('sed -i \'s/ifdef __SSE2__/if 0/g\' $PWD/Zend/zend_operators.c')
+        os.system('sed -i \'s/ifdef __SSE2__/if 0/g\' $PWD/Zend/ext/standard/string.c')
+        
      
 def add_compilation_cflags():
     """Add custom flags for certain benchmarks"""
